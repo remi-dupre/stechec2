@@ -19,3 +19,4 @@ games/*
 !games/tictactoe
 !games/plusminus
 .syntastic_cpp_config
+bazel-*
