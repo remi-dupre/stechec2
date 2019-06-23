@@ -88,8 +88,3 @@ cc_binary(
     deps = [":server_lib"],
     linkstatic = False,
 )
-
-py_binary(
-    name = "stechec2-run",
-    srcs = ["tools/stechec2-run.py"],
-)

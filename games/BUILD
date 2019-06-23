@@ -16,6 +16,12 @@ GAMES = glob(["*"], exclude = ["wscript", "BUILD"], exclude_directories = 0)
     deps = ["//:rules"],
 ) for game in GAMES]
 
+[cc_binary(
+    name = game + ".so",
+    deps = [":" + game],
+    linkshared = True,
+    linkstatic = False,
+) for game in GAMES]
 
 [[cc_test(
     name = test[:-len(".cc")],
