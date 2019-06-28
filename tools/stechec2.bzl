@@ -16,45 +16,39 @@ def cc_champion(name, srcs):
         linkshared = True,
     )
 
-def stechec2_run(name, game, champions, extra_config_content = ""):
-    config_name = "{}_config".format(name)
-
-    native.genrule(
-        name = "{}_config_gen".format(name),
-        srcs = [
-            "//:client",
-            "//:server",
-            "//games:{}.so".format(game),
-        ] + _uniq(champions),
-        outs = [config_name],
-        cmd = """cat > $@ <<EOF
+def stechec2_run(name, game, champions, extra_config_content = None, replay = False):
+    rules = "//games:{}.so".format(game)
+    config_content = """
 server: $(location //:server)
 client: $(location //:client)
 rules: $(location {rules})
 clients: [{clients}]
 verbose: 0
-{extra_config}
-EOF
 """.format(
-            rules = "//games:{}.so".format(game),
-            clients = ",".join(["$(location {})".format(champion) for champion in champions]),
-            extra_config = extra_config_content.strip(),
-        ),
+        rules = rules,
+        clients = ",".join(["$(location {})".format(champion) for champion in champions]),
     )
+
+    if extra_config_content:
+        config_content += extra_config_content.strip() + "\n"
+    if replay:
+        config_content += "replay: $(location :{}_replay)\n".format(name)
 
     results_path = name + "_results"
     native.genrule(
         name = name,
         srcs = [
-            ":" + config_name,
             "//:client",
             "//:server",
-            "//games:{}.so".format(game),
+            rules,
         ] + _uniq(champions),
-        outs = [results_path],
-        cmd = "$(location //tools:stechec2-run) --quiet $(location :{}) > $@".format(config_name),
+        outs = [results_path] + ([name + "_replay"] if replay else []),
         tools = ["//tools:stechec2-run"],
         local = True,
+        cmd = """cat <<EOF > config.yml && $(location //tools:stechec2-run) --quiet config.yml > $(location :{})
+{}
+EOF
+""".format(results_path, config_content),
     )
 
 def e2e_test(name, game, champions, expected_output):
@@ -80,4 +74,24 @@ EOF
             "$(location :{}_expected_results)".format(name),
             "$(location :{}_match_results)".format(name),
         ],
+    )
+
+def stechec2_replay(name, game, replay):
+    rules = "//games:{}.so".format(game)
+    native.genrule(
+        name = name + "_sh_gen",
+        srcs = ["//tools:stechec2_replay.sh.tpl", replay],
+        outs = [name + ".sh"],
+        cmd = "sed -e s@RULES@{}@ -e s@REPLAY@$(rootpath {})@ $(location //tools:stechec2_replay.sh.tpl) > $@".format(game, replay),
+    )
+
+    native.sh_binary(
+        name = name,
+        srcs = [name + ".sh"],
+        data = [
+            "//:replay",
+            rules,
+            replay,
+        ],
+        deps = ["@bazel_tools//tools/bash/runfiles"],
     )

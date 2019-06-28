@@ -1,4 +1,4 @@
-load("//tools:stechec2.bzl", "cc_champion", "e2e_test", "stechec2_run")
+load("//tools:stechec2.bzl", "cc_champion", "e2e_test", "stechec2_replay", "stechec2_run")
 
 cc_library(
     name = "prologin",
@@ -35,4 +35,11 @@ stechec2_run(
         ":libcxx.so",
         ":libcxx.so",
     ],
+    replay = True,
+)
+
+stechec2_replay(
+    name = "replay",
+    game = "tictactoe",
+    replay = ":match_replay",
 )
