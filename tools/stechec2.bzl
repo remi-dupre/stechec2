@@ -5,93 +5,125 @@ def _uniq(iterable):
     return unique_elements.keys()
 
 def cc_champion(name, srcs):
+    """Build a cc champion"""
     if not (name.startswith("lib") and name.endswith(".so")):
         fail("Champions must be named libNAME.so")
 
     native.cc_binary(
         name = name,
         srcs = srcs,
-        deps = [":prologin"],
+        deps = [":prologin"],  # TODO(halfr): remove implicit dependency
         linkopts = ["-ldl"],
         linkshared = True,
     )
 
-def stechec2_run(name, game, champions, extra_config_content = None, replay = False):
+def stechec2_config(name, game, champions, extra_config_content = None, replay = ""):
     rules = "//games:{}.so".format(game)
+
     config_content = """
-server: $(location //:server)
-client: $(location //:client)
-rules: $(location {rules})
+server: $(rootpath //:server)
+client: $(rootpath //:client)
+rules: $(rootpath {rules})
 clients: [{clients}]
 verbose: 0
 """.format(
         rules = rules,
-        clients = ",".join(["$(location {})".format(champion) for champion in champions]),
+        clients = ",".join(["$(rootpath {})".format(champion) for champion in champions]),
     )
 
     if extra_config_content:
         config_content += extra_config_content.strip() + "\n"
     if replay:
-        config_content += "replay: $(location :{}_replay)\n".format(name)
+        config_content += "replay: " + replay
 
-    results_path = name + "_results"
     native.genrule(
-        name = name,
+        name = name + "_gen",
         srcs = [
             "//:client",
             "//:server",
             rules,
         ] + _uniq(champions),
-        outs = [results_path] + ([name + "_replay"] if replay else []),
-        tools = ["//tools:stechec2-run"],
-        local = True,
-        cmd = """cat <<EOF > config.yml && $(location //tools:stechec2-run) --quiet config.yml > $(location :{})
+        outs = [name],
+        cmd = """cat << EOF > $@
 {}
 EOF
-""".format(results_path, config_content),
+""".format(config_content),
     )
 
 def e2e_test(name, game, champions, expected_output):
+    rules = "//games:{}.so".format(game)
+
     native.genrule(
         name = name + "expected_results_gen",
         outs = [name + "_expected_results"],
-        cmd = """cat > $@ <<EOF
+        cmd = """cat << EOF > $@
 {}
 EOF
 """.format(expected_output.strip()),
     )
 
-    stechec2_run(name + "_match", game, champions)
+    stechec2_config(name + "_config", game, champions)
 
     native.sh_test(
         name = name,
         srcs = ["//tools:e2e_test.sh"],
         data = [
+            "//tools:stechec2-run",
             ":{}_expected_results".format(name),
-            ":{}_match_results".format(name),
-        ],
+            "//:client",
+            "//:server",
+            name + "_config",
+            rules,
+        ] + _uniq(champions),
         args = [
+            "$(location //tools:stechec2-run)",
+            "$(location :{}_config)".format(name),
             "$(location :{}_expected_results)".format(name),
-            "$(location :{}_match_results)".format(name),
         ],
     )
 
-def stechec2_replay(name, game, replay):
+def stechec2_match(name, game, champions):
     rules = "//games:{}.so".format(game)
-    native.genrule(
-        name = name + "_sh_gen",
-        srcs = ["//tools:stechec2_replay.sh.tpl", replay],
-        outs = [name + ".sh"],
-        cmd = "sed -e s@RULES@{}@ -e s@REPLAY@$(rootpath {})@ $(location //tools:stechec2_replay.sh.tpl) > $@".format(game, replay),
-    )
+
+    stechec2_config(name + "_config", game, champions)
 
     native.sh_binary(
         name = name,
-        srcs = [name + ".sh"],
+        srcs = ["//tools:stechec2-run.sh"],
         data = [
-            "//:replay",
+            "//tools:stechec2-run",
+            "//:client",
+            "//:server",
+            name + "_config",
             rules,
+        ] + _uniq(champions),
+        args = [
+            "$(location //tools:stechec2-run)",
+            "$(location :{}_config)".format(name),
+        ],
+    )
+
+def replay_test(name, game, champions):
+    rules = "//games:{}.so".format(game)
+    replay = name + "_replay"
+
+    stechec2_config(name + "_config", game, champions, replay = replay)
+
+    native.sh_test(
+        name = name,
+        srcs = ["//tools:replay_test.sh"],
+        data = [
+            "//tools:stechec2-run",
+            "//:client",
+            "//:server",
+            "//:replay",
+            name + "_config",
+            rules,
+        ] + _uniq(champions),
+        args = [
+            "$(location :{}_config)".format(name),
             replay,
+            "$(location {})".format(rules),
         ],
         deps = ["@bazel_tools//tools/bash/runfiles"],
     )
