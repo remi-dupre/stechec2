@@ -20,11 +20,11 @@ new_git_repository(
 
 new_local_repository(
     name = "system_libs",
-    path = "/usr/lib/",
+    path = "/usr/lib/x86_64-linux-gnu/",
     build_file_content = """
 cc_library(
     name = "zmq",
-    srcs = ["libzmq.so"],
+    srcs = ["libzmq.so.5"],
     visibility = ["//visibility:public"],
 )
 """,
