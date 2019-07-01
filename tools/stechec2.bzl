@@ -120,10 +120,6 @@ def replay_test(name, game, champions):
             name + "_config",
             rules,
         ] + _uniq(champions),
-        args = [
-            "$(location :{}_config)".format(name),
-            replay,
-            "$(location {})".format(rules),
-        ],
+        args = ["$(location :{}_config)".format(name)],
         deps = ["@bazel_tools//tools/bash/runfiles"],
     )

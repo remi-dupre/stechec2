@@ -1,7 +1,4 @@
 #!/bin/bash
-
-RUNFILES_LIB_DEBUG=1
-
 # --- begin runfiles.bash initialization v2 ---
 # Copy-pasted from the Bazel Bash runfiles library v2.
 set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
@@ -14,8 +11,9 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 # --- end runfiles.bash initialization v2 ---
 
 config_yml=$1
-replay=$2
-rules=$3
+
+replay=$(sed -n 's/replay: //p' "$config_yml")
+rules=$(sed -n 's/rules: //p' "$config_yml")
 
 echo "Generating replay..."
 $(rlocation __main__/tools/stechec2-run.py) --quiet "$config_yml"
