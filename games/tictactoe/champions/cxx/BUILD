@@ -1,4 +1,4 @@
-load("//tools:stechec2.bzl", "cc_champion", "e2e_test")
+load("//tools:stechec2.bzl", "cc_champion", "e2e_test", "stechec2_run")
 
 cc_library(
     name = "prologin",
@@ -11,7 +11,7 @@ cc_champion(
 )
 
 e2e_test(
-    name = "cxx_test",
+    name = "e2e_test",
     game = "tictactoe",
     champions = [
         ":libcxx.so",
@@ -26,4 +26,13 @@ player: client-2
 score: 1
 nb_timeout: 0
 """,
+)
+
+stechec2_run(
+    name = "match",
+    game = "tictactoe",
+    champions = [
+        ":libcxx.so",
+        ":libcxx.so",
+    ],
 )
