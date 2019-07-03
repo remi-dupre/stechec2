@@ -17,8 +17,26 @@ def cc_champion(name, srcs):
         linkshared = True,
     )
 
-def stechec2_config(name, game, champions, extra_config_content = None, replay = ""):
+def stechec2_map(name, map_content):
+    native.genrule(
+        name = name + "_map_gen",
+        outs = [name + "_map"],
+        cmd = """cat << EOF > $@
+{}
+EOF
+""".format(map_content),
+    )
+
+    return [":" + name + "_map"]
+
+def stechec2_config(name, game, champions, extra_config_content = None, replay = "", map_content = ""):
     rules = "//games:{}.so".format(game)
+
+    config_srcs = [
+        "//:client",
+        "//:server",
+        rules,
+    ] + _uniq(champions)
 
     config_content = """
 server: $(rootpath //:server)
@@ -34,15 +52,14 @@ verbose: 0
     if extra_config_content:
         config_content += extra_config_content.strip() + "\n"
     if replay:
-        config_content += "replay: " + replay
+        config_content += "replay: " + replay + "\n"
+    if map_content:
+        config_content += "map: $(rootpath :{})\n".format(name + "_map")
+        config_srcs.extend(stechec2_map(name, map_content))
 
     native.genrule(
         name = name + "_gen",
-        srcs = [
-            "//:client",
-            "//:server",
-            rules,
-        ] + _uniq(champions),
+        srcs = config_srcs,
         outs = [name],
         cmd = """cat << EOF > $@
 {}
@@ -50,11 +67,13 @@ EOF
 """.format(config_content),
     )
 
-def e2e_test(name, game, champions, expected_output):
+    return [":" + name] + config_srcs
+
+def e2e_test(name, game, champions, expected_output, map_content = ""):
     rules = "//games:{}.so".format(game)
 
     native.genrule(
-        name = name + "expected_results_gen",
+        name = name + "_expected_results_gen",
         outs = [name + "_expected_results"],
         cmd = """cat << EOF > $@
 {}
@@ -62,7 +81,7 @@ EOF
 """.format(expected_output.strip()),
     )
 
-    stechec2_config(name + "_config", game, champions)
+    config_data = stechec2_config(name + "_config", game, champions, map_content = map_content)
 
     native.sh_test(
         name = name,
@@ -70,11 +89,7 @@ EOF
         data = [
             "//tools:stechec2-run",
             ":{}_expected_results".format(name),
-            "//:client",
-            "//:server",
-            name + "_config",
-            rules,
-        ] + _uniq(champions),
+        ] + config_data,
         args = [
             "$(location //tools:stechec2-run)",
             "$(location :{}_config)".format(name),
@@ -82,44 +97,34 @@ EOF
         ],
     )
 
-def stechec2_match(name, game, champions):
+def stechec2_match(name, game, champions, map_content = ""):
     rules = "//games:{}.so".format(game)
 
-    stechec2_config(name + "_config", game, champions)
+    config_data = stechec2_config(name + "_config", game, champions, map_content = map_content)
 
     native.sh_binary(
         name = name,
         srcs = ["//tools:stechec2-run.sh"],
-        data = [
-            "//tools:stechec2-run",
-            "//:client",
-            "//:server",
-            name + "_config",
-            rules,
-        ] + _uniq(champions),
+        data = ["//tools:stechec2-run"] + config_data,
         args = [
             "$(location //tools:stechec2-run)",
             "$(location :{}_config)".format(name),
         ],
     )
 
-def replay_test(name, game, champions):
+def replay_test(name, game, champions, map_content = ""):
     rules = "//games:{}.so".format(game)
     replay = name + "_replay"
 
-    stechec2_config(name + "_config", game, champions, replay = replay)
+    config_data = stechec2_config(name + "_config", game, champions, replay = replay, map_content = map_content)
 
     native.sh_test(
         name = name,
         srcs = ["//tools:replay_test.sh"],
         data = [
             "//tools:stechec2-run",
-            "//:client",
-            "//:server",
             "//:replay",
-            name + "_config",
-            rules,
-        ] + _uniq(champions),
+        ] + config_data,
         args = ["$(location :{}_config)".format(name)],
         deps = ["@bazel_tools//tools/bash/runfiles"],
     )
