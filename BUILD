@@ -88,3 +88,23 @@ cc_binary(
     deps = [":server_lib"],
     linkstatic = False,
 )
+
+cc_library(
+    name = "replay_lib",
+    deps = [":net", ":rules", "//external:gflags"],
+    srcs = ["src/replay/replay.cc"],
+    hdrs = ["src/replay/replay.hh"],
+    copts = [
+        "-DMODULE_COLOR=ANSI_COL_RED",
+        '-DMODULE_NAME=\\"replay\\"',
+        '-DMODULE_VERSION=\\"%s\\"' % VERSION,
+    ],
+)
+
+cc_binary(
+    name = "replay",
+    srcs = ["src/replay/main.cc"],
+    deps = [":replay_lib"],
+    linkopts = ["-ldl"],
+    linkstatic = False,
+)
