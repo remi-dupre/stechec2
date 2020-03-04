@@ -2,34 +2,29 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #include "replay.hh"
 
-#include <fstream>
-#include <iterator>
-
 #include <gflags/gflags.h>
 
+#include <fstream>
+#include <iterator>
 #include <rules/replay-messenger.hh>
 #include <utils/log.hh>
 
 DEFINE_string(rules, "", "Rules library");
 DEFINE_string(replay, "", "Replay file");
 
-bool Replay::check() const
-{
-    if (FLAGS_rules.empty())
-    {
+bool Replay::check() const {
+    if (FLAGS_rules.empty()) {
         ERR("--rules cannot be empty");
         return false;
     }
-    if (FLAGS_replay.empty())
-    {
+    if (FLAGS_replay.empty()) {
         ERR("--replay cannot be empty");
         return false;
     }
     return true;
 }
 
-void Replay::run()
-{
+void Replay::run() {
     // Get required functions from the rules library
     auto rules_lib = std::make_unique<utils::DLL>(FLAGS_rules);
     auto rules_init = rules_lib->get<rules::f_rules_init>("rules_init");
@@ -70,12 +65,10 @@ void Replay::run()
 
     auto replay_result = read_result(&replay);
 
-    if (!replay.empty())
-        WARN("Replay contains %d extra bytes", replay.size());
+    if (!replay.empty()) WARN("Replay contains %d extra bytes", replay.size());
 
     // Compare saved and replayed results
-    if (!compare_results(replay_result, players))
-    {
+    if (!compare_results(replay_result, players)) {
         WARN("Match results mismatch!");
         WARN("Results saved in replay:");
         std::cout << replay_result.scores_yaml();
@@ -85,8 +78,7 @@ void Replay::run()
     std::cout << players.scores_yaml();
 }
 
-utils::Buffer Replay::read_replay(const std::string& replay_path)
-{
+utils::Buffer Replay::read_replay(const std::string& replay_path) {
     auto stream = std::ifstream(replay_path, std::ios::binary);
     std::vector<uint8_t> replay_data;
     std::for_each(std::istreambuf_iterator<char>(stream),
@@ -95,41 +87,32 @@ utils::Buffer Replay::read_replay(const std::string& replay_path)
     return utils::Buffer{replay_data};
 }
 
-std::string Replay::read_map(utils::Buffer* replay)
-{
+std::string Replay::read_map(utils::Buffer* replay) {
     std::string map;
     replay->handle(map);
     return map;
 }
 
-rules::Players Replay::read_players(utils::Buffer* replay)
-{
+rules::Players Replay::read_players(utils::Buffer* replay) {
     rules::Players players;
     replay->handle_bufferizable(&players);
     return players;
 }
 
-rules::Players Replay::read_result(utils::Buffer* replay)
-{
+rules::Players Replay::read_result(utils::Buffer* replay) {
     // Final scores are extracted from the players save
     return read_players(replay);
 }
 
 bool Replay::compare_results(const rules::Players& ref,
-                             const rules::Players& actual) const
-{
-    if (ref.size() != actual.size())
-        return false;
-    for (size_t i = 0; i < ref.size(); ++i)
-    {
+                             const rules::Players& actual) const {
+    if (ref.size() != actual.size()) return false;
+    for (size_t i = 0; i < ref.size(); ++i) {
         const auto& player_ref = ref[i];
         const auto& player_actual = actual[i];
-        if (player_ref->id != player_actual->id)
-            return false;
-        if (player_ref->name != player_actual->name)
-            return false;
-        if (player_ref->score != player_actual->score)
-            return false;
+        if (player_ref->id != player_actual->id) return false;
+        if (player_ref->name != player_actual->name) return false;
+        if (player_ref->score != player_actual->score) return false;
     }
     return true;
 }

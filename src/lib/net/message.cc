@@ -9,11 +9,9 @@
 namespace net {
 
 Message::Message(uint32_t type, uint32_t client_id)
-    : type(type), client_id(client_id)
-{}
+    : type(type), client_id(client_id) {}
 
-std::string Message::str() const
-{
+std::string Message::str() const {
     std::stringstream ss;
 
     ss << "type      : " << type << "\n"
@@ -22,10 +20,9 @@ std::string Message::str() const
     return ss.str();
 }
 
-} // namespace net
+}  // namespace net
 
-std::ostream& operator<<(std::ostream& os, const net::Message& msg)
-{
+std::ostream& operator<<(std::ostream& os, const net::Message& msg) {
     os << msg.str() << std::endl;
 
     return os;

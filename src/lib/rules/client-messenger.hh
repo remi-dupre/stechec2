@@ -3,10 +3,9 @@
 #pragma once
 
 #include <memory>
-#include <stdexcept>
-
 #include <net/client-socket.hh>
 #include <rules/messenger.hh>
+#include <stdexcept>
 #include <utils/buffer.hh>
 
 namespace rules {
@@ -14,15 +13,13 @@ namespace rules {
 // Forward decls
 class Actions;
 
-class ClientMessengerError : public std::runtime_error
-{
-public:
+class ClientMessengerError : public std::runtime_error {
+   public:
     ClientMessengerError() : std::runtime_error("Client messenger error") {}
 };
 
-class ClientMessenger : public Messenger
-{
-public:
+class ClientMessenger : public Messenger {
+   public:
     ClientMessenger(net::ClientSocket* sckt, uint32_t client_id);
 
     void send(const utils::Buffer&) override;
@@ -41,11 +38,11 @@ public:
      * `pulled_id` and return if this is the same as `player_id`. */
     bool wait_for_turn(uint32_t player_id, uint32_t* pulled_id);
 
-private:
-    net::ClientSocket* sckt_; // Not owned.
+   private:
+    net::ClientSocket* sckt_;  // Not owned.
     uint32_t client_id_;
 };
 
 using ClientMessenger_sptr = std::shared_ptr<ClientMessenger>;
 
-} // namespace rules
+}  // namespace rules

@@ -2,20 +2,18 @@
 // Copyright (c) 2019 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include <rules/types.hh>
+#include <string>
 #include <utils/buffer.hh>
 #include <utils/dll.hh>
+#include <vector>
 
-class Replay
-{
-public:
+class Replay {
+   public:
     bool check() const;
     void run();
 
-private:
+   private:
     utils::Buffer read_replay(const std::string& replay_path);
     std::string read_map(utils::Buffer* replay);
     rules::Players read_players(utils::Buffer* replay);

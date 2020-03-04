@@ -4,11 +4,11 @@
 
 // Implementation of a logger based on the one in the first version of Stechec.
 
+#include <gflags/gflags.h>
+
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
-
-#include <gflags/gflags.h>
 
 DECLARE_int32(verbose);
 
@@ -29,11 +29,9 @@ namespace utils {
 #define ANSI_COL_BPURPLE "\033[0;35m"
 #define ANSI_COL_BCYAN "\033[0;36m"
 
-class Logger
-{
-public:
-    enum DisplayLevel
-    {
+class Logger {
+   public:
+    enum DisplayLevel {
         FATAL_LEVEL = 0,
         ERROR_LEVEL = 1,
         WARNING_LEVEL = 2,
@@ -47,13 +45,12 @@ public:
     DisplayLevel& level() { return level_; }
     const DisplayLevel& level() const { return level_; }
 
-    static Logger& get()
-    {
+    static Logger& get() {
         static Logger l;
         return l;
     }
 
-private:
+   private:
     Logger();
     DisplayLevel level_;
 };
@@ -78,30 +75,25 @@ void log(Logger::DisplayLevel lvl, const char* file, int line,
 #define NOTICE(args...) LOG(utils::Logger::NOTICE_LEVEL, ##args)
 #define DEBUG(args...) LOG(utils::Logger::DEBUG_LEVEL, ##args)
 
-#define FATAL(args...) \
-    do \
-    { \
+#define FATAL(args...)                           \
+    do {                                         \
         LOG(utils::Logger::FATAL_LEVEL, ##args); \
-        abort(); \
+        abort();                                 \
     } while (0)
 
 // Basically, an assertion using our logging system
-#define CHECK(cond) \
-    do \
-    { \
-        if (!(cond)) \
-            FATAL("%s", "Assertion failed: " #cond " -- aborting"); \
+#define CHECK(cond)                                                          \
+    do {                                                                     \
+        if (!(cond)) FATAL("%s", "Assertion failed: " #cond " -- aborting"); \
     } while (0)
 
 // An assertion which raises an exception instead of aborting.
-#define CHECK_EXC(exc, cond) \
-    do \
-    { \
-        if (!(cond)) \
-        { \
+#define CHECK_EXC(exc, cond)                                           \
+    do {                                                               \
+        if (!(cond)) {                                                 \
             ERR("%s", "Assertion failed: " #cond " -- raising " #exc); \
-            throw exc(); \
-        } \
+            throw exc();                                               \
+        }                                                              \
     } while (0)
 
-} // namespace utils
+}  // namespace utils

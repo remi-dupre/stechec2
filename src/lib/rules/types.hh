@@ -18,4 +18,4 @@ using f_client_loop = void (*)(ClientMessenger_sptr);
 using f_replay_loop = void (*)(ReplayMessenger_sptr);
 using f_server_loop = void (*)(ServerMessenger_sptr);
 
-} // namespace rules
+}  // namespace rules

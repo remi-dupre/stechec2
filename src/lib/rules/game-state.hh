@@ -7,9 +7,8 @@
 
 namespace rules {
 
-class GameState
-{
-public:
+class GameState {
+   public:
     GameState() : players_{} {}
     GameState(const Players players) : players_{players} {}
     virtual ~GameState() = default;
@@ -21,11 +20,11 @@ public:
     int check(const IAction& action) const { return action.check(*this); }
     void apply(const IAction& action) { action.apply(this); }
 
-protected:
+   protected:
     // Protected to be called by copy()
     GameState(const GameState&) = default;
 
     const Players players_;
 };
 
-} // namespace rules
+}  // namespace rules

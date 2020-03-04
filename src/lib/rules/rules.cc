@@ -9,26 +9,21 @@
 namespace rules {
 
 Rules::Rules(const Options& opt)
-    : opt_(opt)
-    , players_(opt.players)
-    , spectators_(opt.spectators)
-    , timeout_(opt.time)
-{}
+    : opt_(opt),
+      players_(opt.players),
+      spectators_(opt.spectators),
+      timeout_(opt.time) {}
 
-void Rules::save_player_actions(Actions* actions)
-{
-    if (!opt_.replay_stream)
-        return;
+void Rules::save_player_actions(Actions* actions) {
+    if (!opt_.replay_stream) return;
     utils::Buffer buf;
     buf.handle_bufferizable(actions);
     *opt_.replay_stream << buf;
 }
 
-bool Rules::is_spectator(uint32_t id)
-{
+bool Rules::is_spectator(uint32_t id) {
     for (const auto& spectator : spectators_)
-        if (spectator->id == id)
-            return true;
+        if (spectator->id == id) return true;
 
     return false;
 }
@@ -39,13 +34,11 @@ bool Rules::is_spectator(uint32_t id)
 
 SynchronousRules::SynchronousRules(const Options& opt) : Rules(opt) {}
 
-void SynchronousRules::player_loop(ClientMessenger_sptr msgr)
-{
+void SynchronousRules::player_loop(ClientMessenger_sptr msgr) {
     at_start();
     at_player_start(msgr);
 
-    while (!is_finished())
-    {
+    while (!is_finished()) {
         start_of_round();
         Actions* actions = get_actions();
         actions->clear();
@@ -60,8 +53,7 @@ void SynchronousRules::player_loop(ClientMessenger_sptr msgr)
         /* Apply actions onto the gamestate */
         /* We should already have applied our actions */
         for (const auto& action : actions->all())
-            if (action->player_id() != opt_.player->id)
-                apply_action(*action);
+            if (action->player_id() != opt_.player->id) apply_action(*action);
 
         end_of_round();
     }
@@ -70,18 +62,15 @@ void SynchronousRules::player_loop(ClientMessenger_sptr msgr)
     at_player_end(msgr);
 }
 
-void SynchronousRules::replay_loop(ReplayMessenger_sptr msgr)
-{
+void SynchronousRules::replay_loop(ReplayMessenger_sptr msgr) {
     at_start();
 
     auto actions = get_actions();
-    while (!is_finished())
-    {
+    while (!is_finished()) {
         start_of_round();
 
         msgr->pull_actions(actions);
-        for (const auto& action : actions->all())
-            apply_action(*action);
+        for (const auto& action : actions->all()) apply_action(*action);
         actions->clear();
 
         end_of_round();
@@ -90,16 +79,14 @@ void SynchronousRules::replay_loop(ReplayMessenger_sptr msgr)
     at_end();
 }
 
-void SynchronousRules::spectator_loop(ClientMessenger_sptr msgr)
-{
+void SynchronousRules::spectator_loop(ClientMessenger_sptr msgr) {
     at_start();
     at_spectator_start(msgr);
 
     // FIXME(seirl): unused, last round missing?
     bool last_round = false;
 
-    while (last_round || !is_finished())
-    {
+    while (last_round || !is_finished()) {
         start_of_round();
         Actions* actions = get_actions();
         actions->clear();
@@ -109,12 +96,10 @@ void SynchronousRules::spectator_loop(ClientMessenger_sptr msgr)
         msgr->wait_for_ack();
         actions->clear();
 
-        if (last_round)
-            break;
+        if (last_round) break;
 
         msgr->pull_actions(actions);
-        for (const auto& action : actions->all())
-            apply_action(*action);
+        for (const auto& action : actions->all()) apply_action(*action);
         actions->clear();
 
         end_of_round();
@@ -124,17 +109,14 @@ void SynchronousRules::spectator_loop(ClientMessenger_sptr msgr)
     at_spectator_end(msgr);
 }
 
-void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
-{
+void SynchronousRules::server_loop(ServerMessenger_sptr msgr) {
     std::unordered_set<uint32_t> spectators_ids;
     for (const auto& spectator : spectators_)
         spectators_ids.insert(spectator->id);
 
     std::unordered_set<uint32_t> players_ids;
-    for (const auto& player : players_)
-        players_ids.insert(player->id);
-    for (const auto& spectator : spectators_)
-        players_ids.insert(spectator->id);
+    for (const auto& player : players_) players_ids.insert(player->id);
+    for (const auto& spectator : spectators_) players_ids.insert(spectator->id);
 
     std::set<uint32_t> players_timeouting;
     unsigned int players_count = players_.size() + spectators_.size();
@@ -144,8 +126,7 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
 
     dump_state_stream();
 
-    while (!is_finished())
-    {
+    while (!is_finished()) {
         auto spectators_count = spectators_.size();
         start_of_round();
 
@@ -156,14 +137,11 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
         for (const auto& player : players_)
             players_timeouting.insert(player->id);
 
-        for (size_t i = 0; i < players_count; ++i)
-        {
-            if (!msgr->poll(timeout_ > 0 ? timeout_ : -1))
-                break;
+        for (size_t i = 0; i < players_count; ++i) {
+            if (!msgr->poll(timeout_ > 0 ? timeout_ : -1)) break;
 
             // Ignore revived players
-            do
-            {
+            do {
                 msgr->recv_actions(actions);
                 msgr->ack();
             } while (players_ids.find(msgr->last_client_id()) ==
@@ -177,13 +155,11 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
         }
 
         // Increase timeout count for players that did not answer in time
-        for (const auto& player : players_)
-        {
-            if (players_timeouting.find(player->id) != players_timeouting.end())
-            {
+        for (const auto& player : players_) {
+            if (players_timeouting.find(player->id) !=
+                players_timeouting.end()) {
                 player->nb_timeout += 1;
-                if (player->nb_timeout == 3)
-                {
+                if (player->nb_timeout == 3) {
                     players_ids.erase(player->id);
                     players_count--;
                 }
@@ -191,8 +167,7 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
         }
 
         // No timeout for spectators
-        while (spectators_count > 0)
-        {
+        while (spectators_count > 0) {
             msgr->recv_actions(actions);
             msgr->ack();
             spectators_count--;
@@ -200,8 +175,7 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
 
         save_player_actions(actions);
 
-        for (const auto& action : actions->all())
-            apply_action(*action);
+        for (const auto& action : actions->all()) apply_action(*action);
         msgr->push_actions(*actions);
 
         end_of_round();
@@ -219,8 +193,7 @@ void SynchronousRules::server_loop(ServerMessenger_sptr msgr)
 
 TurnBasedRules::TurnBasedRules(const Options& opt) : Rules(opt) {}
 
-void TurnBasedRules::player_loop(ClientMessenger_sptr msgr)
-{
+void TurnBasedRules::player_loop(ClientMessenger_sptr msgr) {
     uint32_t last_player_id;
     msgr->pull_id(&last_player_id);
 
@@ -228,16 +201,13 @@ void TurnBasedRules::player_loop(ClientMessenger_sptr msgr)
     at_player_start(msgr);
 
     start_of_round();
-    while (!is_finished())
-    {
+    while (!is_finished()) {
         uint32_t playing_id;
 
         DEBUG("Waiting for a turn...");
         /* Other players turns */
-        if (msgr->wait_for_turn(opt_.player->id, &playing_id))
-        {
-            if (is_spectator(playing_id))
-            {
+        if (msgr->wait_for_turn(opt_.player->id, &playing_id)) {
+            if (is_spectator(playing_id)) {
                 /* Actions of spectators are not published. */
                 DEBUG("Turn for spectator %d, never mind...", playing_id);
                 start_of_spectator_turn(playing_id);
@@ -259,10 +229,8 @@ void TurnBasedRules::player_loop(ClientMessenger_sptr msgr)
             DEBUG("Got %u actions", actions->size());
 
             /* Apply them onto the gamestate */
-            for (const auto& action : actions->all())
-                apply_action(*action);
-        }
-        else /* Current player turn */
+            for (const auto& action : actions->all()) apply_action(*action);
+        } else /* Current player turn */
         {
             DEBUG("Turn for player %d (me!!!)", playing_id);
             start_of_player_turn(playing_id);
@@ -284,14 +252,13 @@ void TurnBasedRules::player_loop(ClientMessenger_sptr msgr)
         end_of_turn(playing_id);
 
         /* End of each round */
-        if (last_player_id == playing_id)
-        {
+        if (last_player_id == playing_id) {
             DEBUG("End of turn!");
             end_of_round();
             if (!is_finished())
                 start_of_round();
             else
-                break; // Avoid calling is_finished() twice
+                break;  // Avoid calling is_finished() twice
         }
     }
 
@@ -299,16 +266,13 @@ void TurnBasedRules::player_loop(ClientMessenger_sptr msgr)
     at_player_end(msgr);
 }
 
-void TurnBasedRules::replay_loop(ReplayMessenger_sptr msgr)
-{
+void TurnBasedRules::replay_loop(ReplayMessenger_sptr msgr) {
     at_start();
 
     auto actions = get_actions();
-    while (!is_finished())
-    {
+    while (!is_finished()) {
         start_of_round();
-        for (const auto& player : players_)
-        {
+        for (const auto& player : players_) {
             DEBUG("Turn for player: %d", player->id);
 
             start_of_player_turn(player->id);
@@ -316,15 +280,13 @@ void TurnBasedRules::replay_loop(ReplayMessenger_sptr msgr)
 
             msgr->pull_actions(actions);
             DEBUG("Pulled %d actions", actions->size());
-            for (const auto& action : actions->all())
-                apply_action(*action);
+            for (const auto& action : actions->all()) apply_action(*action);
             actions->clear();
 
             end_of_player_turn(player->id);
             end_of_turn(player->id);
 
-            for (const auto& spectator : spectators_)
-            {
+            for (const auto& spectator : spectators_) {
                 DEBUG("Turn for spectator %d", spectator->id);
 
                 start_of_spectator_turn(spectator->id);
@@ -332,8 +294,7 @@ void TurnBasedRules::replay_loop(ReplayMessenger_sptr msgr)
 
                 msgr->pull_actions(actions);
                 DEBUG("Pulled %d actions", actions->size());
-                for (const auto& action : actions->all())
-                    apply_action(*action);
+                for (const auto& action : actions->all()) apply_action(*action);
                 actions->clear();
 
                 end_of_spectator_turn(spectator->id);
@@ -346,8 +307,7 @@ void TurnBasedRules::replay_loop(ReplayMessenger_sptr msgr)
     at_end();
 }
 
-void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr)
-{
+void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr) {
     bool last_round = false;
     uint32_t last_player_id;
     msgr->pull_id(&last_player_id);
@@ -359,18 +319,14 @@ void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr)
     uint32_t previous_playing_id = static_cast<uint32_t>(-1);
     /* `last_round` allows us to inspect the final state of the game, when no
      * other player can play anymore. */
-    while (last_round || !is_finished())
-    {
-
+    while (last_round || !is_finished()) {
         uint32_t playing_id;
         bool my_turn = false;
 
         DEBUG("Waiting for a turn...");
         /* Other players turns */
-        if (msgr->wait_for_turn(opt_.player->id, &playing_id))
-        {
-            if (is_spectator(playing_id))
-            {
+        if (msgr->wait_for_turn(opt_.player->id, &playing_id)) {
+            if (is_spectator(playing_id)) {
                 DEBUG("Turn for spectator %d, never mind...", playing_id);
                 start_of_spectator_turn(playing_id);
                 start_of_turn(playing_id);
@@ -392,12 +348,10 @@ void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr)
             DEBUG("Got %u actions", actions->size());
 
             /* Apply them onto the gamestate */
-            for (const auto& action : actions->all())
-                apply_action(*action);
+            for (const auto& action : actions->all()) apply_action(*action);
 
             end_of_player_turn(playing_id);
-        }
-        else /* Current player turn */
+        } else /* Current player turn */
         {
             DEBUG("Turn for spectator %d (me!!!)", playing_id);
             my_turn = true;
@@ -422,20 +376,17 @@ void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr)
         end_of_turn(playing_id);
 
         /* End of each round */
-        if (last_round)
-        {
+        if (last_round) {
             /* If that was the last round, stop there. */
             DEBUG("That was the last turn, bye!");
             break;
         }
-        if (last_player_id == previous_playing_id && my_turn)
-        {
+        if (last_player_id == previous_playing_id && my_turn) {
             DEBUG("End of round!");
             end_of_round();
             if (!is_finished())
                 start_of_round();
-            else
-            {
+            else {
                 DEBUG("The next round will be the last one!");
                 last_round = true;
             }
@@ -446,8 +397,7 @@ void TurnBasedRules::spectator_loop(ClientMessenger_sptr msgr)
     at_spectator_end(msgr);
 }
 
-void TurnBasedRules::server_loop(ServerMessenger_sptr msgr)
-{
+void TurnBasedRules::server_loop(ServerMessenger_sptr msgr) {
     // Send last player id, assumes players_ is sorted.
     msgr->push_id(players_.back()->id);
 
@@ -458,10 +408,8 @@ void TurnBasedRules::server_loop(ServerMessenger_sptr msgr)
 
     dump_state_stream();
 
-    while (!is_finished())
-    {
-        for (const auto& player : players_)
-        {
+    while (!is_finished()) {
+        for (const auto& player : players_) {
             start_of_player_turn(player->id);
             start_of_turn(player->id);
 
@@ -470,16 +418,12 @@ void TurnBasedRules::server_loop(ServerMessenger_sptr msgr)
             Actions* actions = get_actions();
             actions->clear();
 
-            if (player->nb_timeout < max_consecutive_timeout)
-            {
-                if (!msgr->poll(timeout_ > 0 ? timeout_ : -1))
-                {
+            if (player->nb_timeout < max_consecutive_timeout) {
+                if (!msgr->poll(timeout_ > 0 ? timeout_ : -1)) {
                     player->nb_timeout++;
                     DEBUG("Timeout reached, never mind: %d",
                           player->nb_timeout);
-                }
-                else
-                {
+                } else {
                     DEBUG("Getting actions...");
                     msgr->recv_actions(actions);
                     DEBUG("Got %u actions", actions->size());
@@ -501,8 +445,7 @@ void TurnBasedRules::server_loop(ServerMessenger_sptr msgr)
 
             /* Spectators must be able to see the state of the game between
              * after each player has finished its turn. */
-            for (const auto& s : spectators_)
-            {
+            for (const auto& s : spectators_) {
                 start_of_spectator_turn(s->id);
                 start_of_turn(s->id);
 
@@ -527,11 +470,11 @@ void TurnBasedRules::server_loop(ServerMessenger_sptr msgr)
         if (!is_finished())
             start_of_round();
         else
-            break; // Avoid calling is_finished() twice
+            break;  // Avoid calling is_finished() twice
     }
 
     at_end();
     at_server_end(msgr);
 }
 
-} // namespace rules
+}  // namespace rules

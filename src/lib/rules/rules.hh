@@ -17,9 +17,8 @@ namespace rules {
 const int max_consecutive_timeout = 3;
 
 // Interface of the rules
-class Rules
-{
-public:
+class Rules {
+   public:
     explicit Rules(const Options& opt);
     virtual ~Rules() = default;
 
@@ -64,23 +63,21 @@ public:
     virtual void end_of_round() {}
 
     // Called at every turn by the server to dump the gamestate in the dumpfile
-    virtual void dump_state(std::ostream&)
-    {
-        FATAL("dump_state() virtual function not implemented in the rules "
-              "but the server was launched with the `--dump` option.");
+    virtual void dump_state(std::ostream&) {
+        FATAL(
+            "dump_state() virtual function not implemented in the rules "
+            "but the server was launched with the `--dump` option.");
     }
 
     // Called after every turn to save the actions of the player to the replay
     // file
     void save_player_actions(Actions* actions);
 
-protected:
+   protected:
     bool is_spectator(uint32_t id);
 
-    void dump_state_stream()
-    {
-        if (opt_.dump_stream)
-            dump_state(*opt_.dump_stream);
+    void dump_state_stream() {
+        if (opt_.dump_stream) dump_state(*opt_.dump_stream);
     }
 
     Options opt_;
@@ -91,9 +88,8 @@ protected:
     int timeout_;
 };
 
-class SynchronousRules : public Rules
-{
-public:
+class SynchronousRules : public Rules {
+   public:
     explicit SynchronousRules(const Options& opt);
     ~SynchronousRules() override = default;
 
@@ -103,9 +99,8 @@ public:
     void server_loop(ServerMessenger_sptr msgr) final;
 };
 
-class TurnBasedRules : public Rules
-{
-public:
+class TurnBasedRules : public Rules {
+   public:
     explicit TurnBasedRules(const Options& opt);
     ~TurnBasedRules() override = default;
 
@@ -125,4 +120,4 @@ public:
     void server_loop(ServerMessenger_sptr msgr) final;
 };
 
-} // namespace rules
+}  // namespace rules

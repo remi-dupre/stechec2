@@ -5,9 +5,8 @@
 #include <rules/game-state.hh>
 #include <rules/player.hh>
 
-class GameState final : public rules::GameState
-{
-public:
+class GameState final : public rules::GameState {
+   public:
     // FIXME
     // additional parameters? for instance map
     GameState(rules::Players_sptr players);
@@ -16,6 +15,6 @@ public:
 
     GameState* copy() const override;
 
-private:
+   private:
     rules::Players_sptr players_;
 };

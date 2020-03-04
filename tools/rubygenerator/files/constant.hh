@@ -2,6 +2,6 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <functional> // needed for std::hash
+#include <functional>  // needed for std::hash
 
 // @@GEN_HERE@@

@@ -14,15 +14,12 @@
 namespace rules {
 
 // TODO: refactor rules::Player to rules::Client
-struct Player final
-{
+struct Player final {
     Player() = default;
     Player(uint32_t id_, uint32_t type_)
-        : id(id_), type(type_), score(0), nb_timeout(0), name("anonymous")
-    {}
+        : id(id_), type(type_), score(0), nb_timeout(0), name("anonymous") {}
 
-    void handle_buffer(utils::Buffer& buf)
-    {
+    void handle_buffer(utils::Buffer& buf) {
         buf.handle(id);
         buf.handle(type);
         buf.handle(score);
@@ -37,28 +34,21 @@ struct Player final
     std::string name;
 };
 
-class Players final : public utils::IBufferizable
-{
+class Players final : public utils::IBufferizable {
     using PlayersVector = std::vector<std::shared_ptr<Player>>;
 
-public:
+   public:
     Players() = default;
     explicit Players(PlayersVector players) : players_{std::move(players)} {}
 
-    void handle_buffer(utils::Buffer& buf) override
-    {
-        if (buf.serialize())
-        {
-            for (const auto& player : players_)
-                player->handle_buffer(buf);
-        }
-        else
-        {
+    void handle_buffer(utils::Buffer& buf) override {
+        if (buf.serialize()) {
+            for (const auto& player : players_) player->handle_buffer(buf);
+        } else {
             // Reset
             players_.clear();
 
-            while (!buf.empty())
-            {
+            while (!buf.empty()) {
                 // Get a player
                 auto player = std::make_shared<Player>(0, 0);
 
@@ -70,11 +60,9 @@ public:
         }
     }
 
-    std::string scores_yaml() const
-    {
+    std::string scores_yaml() const {
         std::stringstream ss;
-        for (const auto& player : players_)
-        {
+        for (const auto& player : players_) {
             ss << "---" << std::endl
                << "player: " << player->name.c_str() << std::endl
                << "score: " << player->score << std::endl
@@ -86,8 +74,7 @@ public:
     void add(std::shared_ptr<Player> player) { players_.push_back(player); }
 
     // Sort players by identifiers
-    void sort()
-    {
+    void sort() {
         std::sort(players_.begin(), players_.end(),
                   [](const auto& a, const auto& b) { return a->id < b->id; });
     }
@@ -103,27 +90,21 @@ public:
     auto operator[](int i) { return players_[i]; }
     auto operator[](int i) const { return players_[i]; }
 
-private:
+   private:
     PlayersVector players_;
 };
 
-enum PlayerType
-{
-    PLAYER = 1,
-    SPECTATOR = 2
-};
+enum PlayerType { PLAYER = 1, SPECTATOR = 2 };
 const int MAX_PLAYER_TYPE = 3;
 
-static inline std::string playertype_str(PlayerType type)
-{
-    switch (type)
-    {
-    case PLAYER:
-        return "PLAYER";
-    case SPECTATOR:
-        return "SPECTATOR";
+static inline std::string playertype_str(PlayerType type) {
+    switch (type) {
+        case PLAYER:
+            return "PLAYER";
+        case SPECTATOR:
+            return "SPECTATOR";
     }
     return {};
 }
 
-} // namespace rules
+}  // namespace rules

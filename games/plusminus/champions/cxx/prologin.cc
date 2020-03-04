@@ -8,8 +8,7 @@
 void init_game() {}
 
 /// Called when this is your turn to play
-void play_turn()
-{
+void play_turn() {
     if (my_team() == 1)
         guess(42);
     else

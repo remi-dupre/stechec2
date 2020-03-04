@@ -7,20 +7,15 @@
 
 GameState::GameState(const std::string& map_content,
                      const rules::Players& players)
-    : rules::GameState(players), secret_number_found(false), round(0)
-{
+    : rules::GameState(players), secret_number_found(false), round(0) {
     std::istringstream map_stream{map_content};
     map_stream >> secret_number;
     for (const auto& p : players_)
-        player_guess_map[p->id] = -2; // default value
+        player_guess_map[p->id] = -2;  // default value
 }
 
-GameState* GameState::copy() const
-{
-    return new GameState(*this);
-}
+GameState* GameState::copy() const { return new GameState(*this); }
 
-bool GameState::is_finished() const
-{
+bool GameState::is_finished() const {
     return secret_number_found || round >= 100;
 }

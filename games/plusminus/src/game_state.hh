@@ -2,14 +2,12 @@
 // Copyright (c) 2015 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <unordered_map>
-
 #include <rules/game-state.hh>
 #include <rules/player.hh>
+#include <unordered_map>
 
-class GameState final : public rules::GameState
-{
-public:
+class GameState final : public rules::GameState {
+   public:
     GameState(const std::string& map_content, const rules::Players& players);
     GameState(const GameState& st) = default;
     ~GameState() = default;

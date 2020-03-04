@@ -3,25 +3,22 @@
 #pragma once
 
 #include <memory>
-#include <stdexcept>
-
 #include <net/server-socket.hh>
 #include <rules/messenger.hh>
+#include <stdexcept>
 #include <utils/buffer.hh>
 
 namespace rules {
 
 class Actions;
 
-class ServerMessengerError : public std::runtime_error
-{
-public:
+class ServerMessengerError : public std::runtime_error {
+   public:
     ServerMessengerError() : std::runtime_error("Server messenger error") {}
 };
 
-class ServerMessenger : public Messenger
-{
-public:
+class ServerMessenger : public Messenger {
+   public:
     explicit ServerMessenger(net::ServerSocket* sckt);
 
     void send(const utils::Buffer&) override;
@@ -40,11 +37,11 @@ public:
 
     uint32_t last_client_id() { return last_client_id_; }
 
-private:
-    net::ServerSocket* sckt_; // Not owned.
+   private:
+    net::ServerSocket* sckt_;  // Not owned.
     uint32_t last_client_id_;
 };
 
 using ServerMessenger_sptr = std::shared_ptr<ServerMessenger>;
 
-} // namespace rules
+}  // namespace rules

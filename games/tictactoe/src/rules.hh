@@ -3,7 +3,6 @@
 #pragma once
 
 #include <memory>
-
 #include <rules/actions.hh>
 #include <rules/client-messenger.hh>
 #include <rules/options.hh>
@@ -19,9 +18,8 @@ typedef void (*f_champion_init_game)();
 typedef void (*f_champion_play_turn)();
 typedef void (*f_champion_end_game)();
 
-class Rules final : public rules::TurnBasedRules
-{
-public:
+class Rules final : public rules::TurnBasedRules {
+   public:
     explicit Rules(const rules::Options opt);
 
     rules::Actions* get_actions() override;
@@ -43,12 +41,12 @@ public:
     GameState& game_state();
     const GameState& game_state() const;
 
-protected:
+   protected:
     f_champion_init_game champion_init_game_;
     f_champion_play_turn champion_play_turn_;
     f_champion_end_game champion_end_game_;
 
-private:
+   private:
     void register_actions();
 
     std::unique_ptr<utils::DLL> champion_dll_;

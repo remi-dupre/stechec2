@@ -11,24 +11,21 @@
 namespace rules {
 
 template <typename GameState, typename ApiError>
-class Api
-{
-protected:
+class Api {
+   protected:
     // Functor template implementing the boilerplate of applying a champion's
     // action to the game state. The T template parameter is the first argument
     // of the Action's constructor. It is optional, but declaring it allows
     // using brace-initializers to type T when calling operator().
     template <typename Action, typename T = Action>
-    class ApiActionFunc
-    {
-    public:
+    class ApiActionFunc {
+       public:
         ApiActionFunc(Api* api) : api_(api) {}
         virtual ~ApiActionFunc() = default;
 
         // Apply the champion's action to the game state
         template <typename... Args>
-        ApiError call(Args&&... args)
-        {
+        ApiError call(Args&&... args) {
             // Build action object
             auto action = std::make_unique<Action>(std::forward<Args>(args)...,
                                                    api_->player_->id);
@@ -47,8 +44,7 @@ protected:
 
         // Universal forward
         template <typename... Args>
-        ApiError operator()(Args&&... args)
-        {
+        ApiError operator()(Args&&... args) {
             return call(std::forward<Args>(args)...);
         }
 
@@ -57,14 +53,13 @@ protected:
         // above.
         ApiError operator()(T arg) { return call(arg); }
 
-    private:
+       private:
         Api* api_;
     };
 
-public:
+   public:
     Api(std::unique_ptr<GameState> game_state, std::shared_ptr<Player> player)
-        : game_state_(std::move(game_state)), player_(player)
-    {}
+        : game_state_(std::move(game_state)), player_(player) {}
     virtual ~Api() {}
 
     const std::shared_ptr<Player> player() const { return player_; }
@@ -75,8 +70,7 @@ public:
     const GameState& game_state() const { return *game_state_; }
 
     // Checks action on GameState
-    ApiError game_state_check(const IAction& action) const
-    {
+    ApiError game_state_check(const IAction& action) const {
         return static_cast<ApiError>(game_state_->check(action));
     }
 
@@ -87,19 +81,17 @@ public:
     void clear_old_game_states() { game_state_.clear_old_versions(); }
 
     // Cancels the last played action
-    bool cancel()
-    {
-        if (!game_state_.can_cancel())
-            return false;
+    bool cancel() {
+        if (!game_state_.can_cancel()) return false;
         actions_.cancel();
         game_state_.cancel();
         return true;
     }
 
-protected:
+   protected:
     GameStateHistory<GameState> game_state_;
     std::shared_ptr<Player> player_;
     Actions actions_;
 };
 
-} // namespace rules
+}  // namespace rules

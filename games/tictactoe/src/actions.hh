@@ -2,9 +2,6 @@
 // Copyright (c) 2018 Association Prologin <association@prologin.org>
 #pragma once
 
-enum action_id
-{
-    ID_ACTION_PLAY
-};
+enum action_id { ID_ACTION_PLAY };
 
 #include "action_play.hh"

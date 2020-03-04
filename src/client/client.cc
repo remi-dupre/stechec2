@@ -24,8 +24,7 @@ DEFINE_string(map, "", "Map file");
 DEFINE_bool(spectator, false, "Set if the client is a spectator");
 DEFINE_int32(time, 1000, "Max time the client can use (in ms)");
 
-Client::Client()
-{
+Client::Client() {
     rules_lib_ = std::make_unique<utils::DLL>(FLAGS_rules);
 
     // Get required functions from the rules library
@@ -38,8 +37,7 @@ Client::Client()
         client_loop = rules_lib_->get<rules::f_client_loop>("player_loop");
 }
 
-void Client::run()
-{
+void Client::run() {
     // Register to the stechec2 server
     sckt_init();
 
@@ -78,8 +76,7 @@ void Client::run()
     sckt_close();
 }
 
-void Client::sckt_init()
-{
+void Client::sckt_init() {
     sckt_ = std::make_unique<net::ClientSocket>(FLAGS_sub_addr, FLAGS_req_addr);
     sckt_->init();
 
@@ -113,19 +110,14 @@ void Client::sckt_init()
     NOTICE("Connected - id: %i", player_->id);
 }
 
-void Client::sckt_close()
-{
-    sckt_->close();
-}
+void Client::sckt_close() { sckt_->close(); }
 
-void Client::wait_for_players()
-{
+void Client::wait_for_players() {
     net::Message msg;
 
     // Wait for players
     uint32_t msg_type = net::MSG_IGNORED;
-    while (msg_type != net::MSG_PLAYERS)
-    {
+    while (msg_type != net::MSG_PLAYERS) {
         auto buf = sckt_->pull();
         msg.handle_buffer(*buf);
 
@@ -135,8 +127,7 @@ void Client::wait_for_players()
 
     // Wait for spectators
     msg_type = net::MSG_IGNORED;
-    while (msg_type != net::MSG_PLAYERS)
-    {
+    while (msg_type != net::MSG_PLAYERS) {
         auto buf = sckt_->pull();
         msg.handle_buffer(*buf);
 
@@ -145,13 +136,11 @@ void Client::wait_for_players()
     }
 }
 
-void Client::wait_for_game_start()
-{
+void Client::wait_for_game_start() {
     net::Message msg;
     uint32_t msg_type = net::MSG_IGNORED;
 
-    while (msg_type != net::MSG_GAMESTART)
-    {
+    while (msg_type != net::MSG_GAMESTART) {
         auto buf = sckt_->pull();
         msg.handle_buffer(*buf);
         msg_type = msg.type;

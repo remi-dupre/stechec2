@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <unordered_map>
-
 #include <utils/buffer.hh>
 #include <utils/log.hh>
 
@@ -12,12 +11,11 @@
 
 namespace rules {
 
-class Actions : public utils::IBufferizable
-{
+class Actions : public utils::IBufferizable {
     using ActionFactory = std::function<std::unique_ptr<IAction>()>;
     using ActionLog = std::vector<std::unique_ptr<IAction>>;
 
-public:
+   public:
     static constexpr size_t MAX_ACTIONS = 1024;
 
     // To handle unserialization of multiple Actions, we have to be able to
@@ -27,8 +25,7 @@ public:
     // Serialization/Unserialization
     void handle_buffer(utils::Buffer& buf) override;
 
-    void add(std::unique_ptr<IAction> action)
-    {
+    void add(std::unique_ptr<IAction> action) {
         if (actions_.size() >= MAX_ACTIONS)
             FATAL("Too many actions (>%d) sent during this turn.", MAX_ACTIONS);
         actions_.push_back(std::move(action));
@@ -44,9 +41,9 @@ public:
     // Deprecated: the action buffer should not be mutable.
     ActionLog& all() { return actions_; }
 
-private:
+   private:
     ActionLog actions_;
     std::unordered_map<uint32_t, ActionFactory> action_factory_;
 };
 
-} // namespace rules
+}  // namespace rules

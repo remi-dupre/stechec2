@@ -11,8 +11,7 @@
 
 namespace rules {
 
-struct Options
-{
+struct Options {
     // Path to the champion library
     std::string champion_lib;
 
@@ -49,4 +48,4 @@ struct Options
 
 std::string read_map_from_path(const std::string& path);
 
-} // namespace rules
+}  // namespace rules

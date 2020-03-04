@@ -10,15 +10,13 @@
 
 namespace utils {
 
-class SandboxTimeout : public std::runtime_error
-{
-public:
+class SandboxTimeout : public std::runtime_error {
+   public:
     SandboxTimeout() : std::runtime_error("Sandbox call timed out") {}
 };
 
-class Sandbox
-{
-public:
+class Sandbox {
+   public:
     // Timeout in ms.
     explicit Sandbox(unsigned int timeout = 1000) : timeout_(timeout) {}
 
@@ -33,8 +31,7 @@ public:
     Ret execute(const std::function<Ret(Args...)>& func, Args... args);
 
     template <typename Ret, typename... Args>
-    Ret execute(Ret (*func)(Args...), Args... args)
-    {
+    Ret execute(Ret (*func)(Args...), Args... args) {
         return execute(std::function<Ret(Args...)>(func), args...);
     }
 
@@ -42,11 +39,11 @@ public:
     template <typename... Args>
     void execute(const std::function<void(Args...)>& func, Args... args);
 
-private:
+   private:
     unsigned int timeout_;
 };
 
-} // namespace utils
+}  // namespace utils
 
 // Implementation of large templated member functions.
 #include "sandbox.inl"

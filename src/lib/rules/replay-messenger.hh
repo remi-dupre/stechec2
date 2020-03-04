@@ -8,18 +8,17 @@ namespace rules {
 
 class Actions;
 
-class ReplayMessenger
-{
-public:
+class ReplayMessenger {
+   public:
     explicit ReplayMessenger(utils::Buffer* buf) : buf_(buf) {}
 
     void pull_id(uint32_t* player_id);
     void pull_actions(Actions* actions);
 
-private:
+   private:
     utils::Buffer* buf_;
 };
 
 using ReplayMessenger_sptr = std::shared_ptr<ReplayMessenger>;
 
-} // namespace rules
+}  // namespace rules

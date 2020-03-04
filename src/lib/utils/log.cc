@@ -2,10 +2,11 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #include "log.hh"
 
+#include <gflags/gflags.h>
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
-#include <gflags/gflags.h>
 
 DEFINE_int32(verbose, 5, "Verbosity of the log (0-5)");
 
@@ -15,11 +16,9 @@ Logger::Logger() : level_(static_cast<Logger::DisplayLevel>(FLAGS_verbose)) {}
 
 void log(Logger::DisplayLevel lvl, const char* file, int line,
          const char* module_name, const char* module_color, const char* fmt,
-         ...)
-{
+         ...) {
     // Check if the current verbosity level is enough
-    if (lvl > Logger::get().level())
-        return;
+    if (lvl > Logger::get().level()) return;
 
     va_list va;
     va_start(va, fmt);
@@ -29,8 +28,7 @@ void log(Logger::DisplayLevel lvl, const char* file, int line,
 
     // Only display the basename of the file, not the full path
     const char* filename = strrchr(file, '/');
-    if (filename)
-        file = filename + 1;
+    if (filename) file = filename + 1;
 
     // Format the log message
     snprintf(fmt_buffer, sizeof(fmt_buffer), "[%s%s%s] %s (%s:%d)",
@@ -42,4 +40,4 @@ void log(Logger::DisplayLevel lvl, const char* file, int line,
     va_end(va);
 }
 
-} // namespace utils
+}  // namespace utils

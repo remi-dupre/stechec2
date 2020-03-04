@@ -2,12 +2,11 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #include "server.hh"
 
+#include <gflags/gflags.h>
+
 #include <fstream>
 #include <iostream>
 #include <memory>
-
-#include <gflags/gflags.h>
-
 #include <net/message.hh>
 #include <rules/player.hh>
 #include <utils/log.hh>
@@ -23,8 +22,7 @@ DEFINE_string(rules, "rules.so", "Rules library");
 DEFINE_string(dump, "", "Game data dump output path");
 DEFINE_string(replay, "", "Game replay output path");
 
-Server::Server()
-{
+Server::Server() {
     rules_lib_ = std::make_unique<utils::DLL>(FLAGS_rules);
     // Get required functions from the rules library
     rules_config = rules_lib_->get<rules::f_rules_config>("rules_config");
@@ -33,8 +31,7 @@ Server::Server()
     rules_result = rules_lib_->get<rules::f_rules_result>("rules_result");
 }
 
-void Server::run()
-{
+void Server::run() {
     // Launch the network server, listen for connections
     sckt_init();
 
@@ -67,8 +64,7 @@ void Server::run()
     rules_opt.spectators = spectators_;
 
     // Create dump output stream
-    if (!FLAGS_dump.empty())
-    {
+    if (!FLAGS_dump.empty()) {
         std::shared_ptr<std::ofstream> dump_stream =
             std::make_shared<std::ofstream>(FLAGS_dump);
         if (!dump_stream->is_open())
@@ -104,8 +100,7 @@ void Server::run()
     sckt_close();
 }
 
-void Server::sckt_init()
-{
+void Server::sckt_init() {
     sckt_ = std::make_unique<net::ServerSocket>(FLAGS_pub_addr, FLAGS_rep_addr);
     sckt_->init();
 
@@ -113,23 +108,16 @@ void Server::sckt_init()
     NOTICE("Publishing on %s", FLAGS_rep_addr.c_str());
 }
 
-void Server::sckt_close()
-{
-    sckt_->close();
-}
+void Server::sckt_close() { sckt_->close(); }
 
-bool used_identifier(uint32_t player_id, const rules::Players& players)
-{
+bool used_identifier(uint32_t player_id, const rules::Players& players) {
     for (const auto& player : players)
-        if (player->id == player_id)
-            return true;
+        if (player->id == player_id) return true;
     return false;
 }
 
-void Server::wait_for_clients()
-{
-    if (FLAGS_nb_clients <= 0)
-        FATAL("Server started with --nb_clients <= 0.");
+void Server::wait_for_clients() {
+    if (FLAGS_nb_clients <= 0) FATAL("Server started with --nb_clients <= 0.");
 
     int spectator_count = FLAGS_nb_clients - config_.player_count;
     if (spectator_count < 0)
@@ -145,20 +133,17 @@ void Server::wait_for_clients()
     // Spectator IDs must be in [NB_PLAYER-NB_CLIENTS[
 
     while (players_.size() + spectators_.size() <
-           static_cast<size_t>(FLAGS_nb_clients))
-    {
+           static_cast<size_t>(FLAGS_nb_clients)) {
         auto buf_req = sckt_->recv();
 
-        if (!buf_req)
-            continue;
+        if (!buf_req) continue;
 
         NOTICE("New client");
 
         net::Message id_req;
         id_req.handle_buffer(*buf_req);
 
-        if (id_req.type != net::MSG_CONNECT)
-        {
+        if (id_req.type != net::MSG_CONNECT) {
             ERR("Message is not of type MSG_CONNECT, ignoring request");
             continue;
         }
@@ -170,8 +155,7 @@ void Server::wait_for_clients()
         rules::PlayerType player_type =
             static_cast<rules::PlayerType>(client_type);
 
-        if (player_id == -1)
-        {
+        if (player_id == -1) {
             // Client requests an ID from the server
             if (player_type == rules::PLAYER)
                 player_id = players_.size();
@@ -183,31 +167,28 @@ void Server::wait_for_clients()
         }
 
         if (used_identifier(player_id, players_) ||
-            used_identifier(player_id, spectators_))
-        {
+            used_identifier(player_id, spectators_)) {
             ERR("Client identifier %d is already used", player_id);
-            player_id = -1; // Treated by client as invalid
+            player_id = -1;  // Treated by client as invalid
         }
 
-        if (player_id < -1)
-        {
+        if (player_id < -1) {
             ERR("Client identifier %d is invalid", player_id);
-            player_id = -1; // Treated by client as invalid
+            player_id = -1;  // Treated by client as invalid
         }
 
-        if (player_type == rules::PLAYER && player_id >= config_.player_count)
-        {
+        if (player_type == rules::PLAYER && player_id >= config_.player_count) {
             ERR("Invalid player identifier %d > %d", player_id,
                 config_.player_count - 1);
-            player_id = -1; // Treated by client as invalid
+            player_id = -1;  // Treated by client as invalid
         }
 
         if (player_type == rules::SPECTATOR &&
-            (player_id < config_.player_count || player_id >= FLAGS_nb_clients))
-        {
+            (player_id < config_.player_count ||
+             player_id >= FLAGS_nb_clients)) {
             ERR("Spectator identifier %d invalid, expecting %d spectators",
                 player_id, spectator_count - spectators_.size());
-            player_id = -1; // Treated by client as invalid
+            player_id = -1;  // Treated by client as invalid
         }
 
         // Send the reply with a uid
@@ -216,8 +197,7 @@ void Server::wait_for_clients()
         id_rep.handle_buffer(buf_rep);
         sckt_->send(buf_rep);
 
-        if (player_id == -1)
-            continue; // Do not add invalid clients
+        if (player_id == -1) continue;  // Do not add invalid clients
 
         auto new_client = std::make_shared<rules::Player>(
             static_cast<uint32_t>(player_id), client_type);
@@ -257,10 +237,8 @@ void Server::wait_for_clients()
     sckt_->push(buf_spectators);
 }
 
-std::shared_ptr<std::ostream> Server::replay_init()
-{
-    if (FLAGS_replay.empty())
-        return {};
+std::shared_ptr<std::ostream> Server::replay_init() {
+    if (FLAGS_replay.empty()) return {};
 
     auto ofs = std::make_shared<std::ofstream>(FLAGS_replay, std::ios::binary);
     if (!ofs->is_open())
@@ -279,10 +257,8 @@ std::shared_ptr<std::ostream> Server::replay_init()
     return ofs;
 }
 
-void Server::replay_save_results(std::shared_ptr<std::ostream> replay_stream)
-{
-    if (!replay_stream)
-        return;
+void Server::replay_save_results(std::shared_ptr<std::ostream> replay_stream) {
+    if (!replay_stream) return;
     utils::Buffer buf;
     buf.handle_bufferizable(&players_);
     *replay_stream << buf;

@@ -1,29 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
+#include <gtest/gtest.h>
+
 #include "../action.hh"
 #include "../game-state.hh"
-
-#include <gtest/gtest.h>
 
 using namespace rules;
 
 // Test action: increments or decrements state.x in [0;3].
 
-class MyGameState : public GameState
-{
-public:
+class MyGameState : public GameState {
+   public:
     MyGameState() : GameState(), x(0) {}
     MyGameState* copy() const { return new MyGameState(*this); }
     int x;
 };
 
-class MyIncrAction : public Action<MyGameState>
-{
-public:
+class MyIncrAction : public Action<MyGameState> {
+   public:
     ~MyIncrAction() override {}
 
-    int check(const MyGameState& st) const override
-    {
+    int check(const MyGameState& st) const override {
         if (st.x >= 3)
             return 1;
         else
@@ -39,13 +36,11 @@ public:
     uint32_t id() const override { return 0; }
 };
 
-class MyDecrAction : public Action<MyGameState>
-{
-public:
+class MyDecrAction : public Action<MyGameState> {
+   public:
     ~MyDecrAction() override {}
 
-    int check(const MyGameState& st) const override
-    {
+    int check(const MyGameState& st) const override {
         if (st.x <= 0)
             return 1;
         else
@@ -61,8 +56,7 @@ public:
     uint32_t id() const override { return 0; }
 };
 
-TEST(RulesAction, CheckApply)
-{
+TEST(RulesAction, CheckApply) {
     MyGameState mgs{};
     EXPECT_EQ(0, mgs.x);
 
@@ -79,8 +73,7 @@ TEST(RulesAction, CheckApply)
     EXPECT_EQ(1, mgs.x);
 }
 
-TEST(RulesAction, CheckError)
-{
+TEST(RulesAction, CheckError) {
     MyGameState mgs{};
 
     MyIncrAction incr;
@@ -88,8 +81,7 @@ TEST(RulesAction, CheckError)
 
     EXPECT_NE(0, decr.check(mgs));
 
-    for (int i = 0; i < 3; ++i)
-        incr.apply(&mgs);
+    for (int i = 0; i < 3; ++i) incr.apply(&mgs);
 
     EXPECT_NE(0, incr.check(mgs));
 }

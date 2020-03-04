@@ -3,7 +3,6 @@
 #pragma once
 
 #include <memory>
-
 #include <rules/actions.hh>
 #include <rules/client-messenger.hh>
 #include <rules/options.hh>
@@ -19,9 +18,8 @@ using f_champion_init_game = void (*)();
 using f_champion_play_turn = void (*)();
 using f_champion_end_game = void (*)();
 
-class Rules final : public rules::SynchronousRules
-{
-public:
+class Rules final : public rules::SynchronousRules {
+   public:
     explicit Rules(const rules::Options opt);
     ~Rules() = default;
 
@@ -38,12 +36,12 @@ public:
 
     bool is_finished() override;
 
-protected:
+   protected:
     f_champion_init_game champion_init_game_;
     f_champion_play_turn champion_play_turn_;
     f_champion_end_game champion_end_game_;
 
-private:
+   private:
     void register_actions();
 
     std::unique_ptr<utils::DLL> champion_dll_;

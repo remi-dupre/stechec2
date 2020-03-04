@@ -4,14 +4,12 @@
 
 #include <cstdint>
 #include <iostream>
-
 #include <utils/buffer.hh>
 
 namespace net {
 
 // Message types of stechec2 (not the rules)
-enum MsgType
-{
+enum MsgType {
     MSG_ERR = 0,
     MSG_CONNECT = 1,
     MSG_RULES = 2,
@@ -22,12 +20,10 @@ enum MsgType
     MSG_EXIT = 7
 };
 
-struct Message
-{
+struct Message {
     explicit Message(uint32_t type = 0, uint32_t client_id = 0);
 
-    void handle_buffer(utils::Buffer& buf)
-    {
+    void handle_buffer(utils::Buffer& buf) {
         buf.handle(type);
         buf.handle(client_id);
     }
@@ -43,6 +39,6 @@ struct Message
     int32_t client_id;
 };
 
-} // namespace net
+}  // namespace net
 
 std::ostream& operator<<(std::ostream& os, const net::Message& msg);

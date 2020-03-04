@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
-#include "../sandbox.hh"
-
 #include <gtest/gtest.h>
 #include <unistd.h>
 
+#include "../sandbox.hh"
+
 using namespace utils;
 
-TEST(UtilsSandbox, BasicBehavior)
-{
+TEST(UtilsSandbox, BasicBehavior) {
     std::function<int()> do_nothing = [] { return 0; };
     std::function<int()> sleep_2 = [] {
         sleep(2);
@@ -21,26 +20,22 @@ TEST(UtilsSandbox, BasicBehavior)
     ASSERT_THROW(s.execute(sleep_2), SandboxTimeout);
 }
 
-TEST(UtilsSandbox, ReturnValue)
-{
+TEST(UtilsSandbox, ReturnValue) {
     std::function<int(int, int)> add = [](int x, int y) { return x + y; };
 
     Sandbox s;
     ASSERT_EQ(7, s.execute(add, 3, 4));
 }
 
-TEST(UtilsSandbox, SuccessiveCalls)
-{
+TEST(UtilsSandbox, SuccessiveCalls) {
     std::function<int(int, int)> add = [](int x, int y) { return x + y; };
 
     Sandbox s;
 
-    for (int i = 0; i < 10000; ++i)
-        ASSERT_EQ(7, s.execute(add, 3, 4));
+    for (int i = 0; i < 10000; ++i) ASSERT_EQ(7, s.execute(add, 3, 4));
 }
 
-TEST(UtilsSandbox, CustomTimeout)
-{
+TEST(UtilsSandbox, CustomTimeout) {
     Sandbox s(250);
 
     s.execute(usleep, 100000u);
@@ -52,8 +47,7 @@ TEST(UtilsSandbox, CustomTimeout)
 
 static void useless() {}
 
-TEST(UtilsSandbox, VoidRet)
-{
+TEST(UtilsSandbox, VoidRet) {
     std::function<void()> useless_lambda = [] {};
 
     Sandbox s;
@@ -61,8 +55,7 @@ TEST(UtilsSandbox, VoidRet)
     s.execute(useless_lambda);
 }
 
-TEST(UtilsSandbox, NoTimeout)
-{
+TEST(UtilsSandbox, NoTimeout) {
     Sandbox s(0);
     s.execute(usleep, 50000u);
 }

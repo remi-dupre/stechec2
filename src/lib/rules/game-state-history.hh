@@ -13,15 +13,13 @@ namespace rules {
 // GameStateHistory<GameState> holds a GameState instance, can save it to a
 // stack and allows restoring previous versions.
 template <typename GameState>
-class GameStateHistory
-{
+class GameStateHistory {
     static_assert(std::is_base_of<rules::GameState, GameState>::value,
                   "GameState not derived from rules::GameState");
 
-public:
+   public:
     GameStateHistory(std::unique_ptr<GameState> current)
-        : current_(std::move(current))
-    {}
+        : current_(std::move(current)) {}
 
     GameState& operator*() { return *current_.get(); }
     const GameState& operator*() const { return *current_.get(); }
@@ -33,8 +31,7 @@ public:
     // Returns true if there is a restorable GameState in the version history
     bool can_cancel() const { return !versions_.empty(); }
     // Restores most recent version of the GameState
-    void cancel()
-    {
+    void cancel() {
         assert(can_cancel());
         current_.swap(versions_.back());
         versions_.pop_back();
@@ -42,8 +39,8 @@ public:
     // Deletes previous copies of the GameState instance
     void clear_old_versions() { versions_.clear(); }
 
-private:
+   private:
     std::unique_ptr<GameState> current_;
     std::vector<std::unique_ptr<GameState>> versions_;
 };
-} // namespace rules
+}  // namespace rules

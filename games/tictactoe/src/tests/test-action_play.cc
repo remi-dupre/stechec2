@@ -2,22 +2,18 @@
 // Copyright (c) 2018 Association Prologin <association@prologin.org>
 #include "../actions.hh"
 #include "../constant.hh"
-
 #include "test-helpers.hh"
 
-TEST_F(ActionTest, ActionPlay_OutOfBounds)
-{
+TEST_F(ActionTest, ActionPlay_OutOfBounds) {
     st->set_player_can_play(PLAYER_1, true);
 
-    for (position pos : {(position){-1, 1}, {3, 1}, {0, 4}, {2, -7}})
-    {
+    for (position pos : {(position){-1, 1}, {3, 1}, {0, 4}, {2, -7}}) {
         ActionPlay act(pos, PLAYER_1);
         EXPECT_EQ(OUT_OF_BOUNDS, act.check(*st));
     }
 }
 
-TEST_F(ActionTest, ActionPlay_AlreadyOccupied)
-{
+TEST_F(ActionTest, ActionPlay_AlreadyOccupied) {
     st->set_player_can_play(PLAYER_1, true);
     st->set_player_can_play(PLAYER_2, true);
 
@@ -37,8 +33,7 @@ TEST_F(ActionTest, ActionPlay_AlreadyOccupied)
     EXPECT_EQ(PLAYER_1, st->get_cell(pos));
 }
 
-TEST_F(ActionTest, ActionPlay_AlreadyPlayed)
-{
+TEST_F(ActionTest, ActionPlay_AlreadyPlayed) {
     st->set_player_can_play(PLAYER_1, true);
 
     ActionPlay act({0, 0}, PLAYER_1);
@@ -49,8 +44,7 @@ TEST_F(ActionTest, ActionPlay_AlreadyPlayed)
     EXPECT_EQ(ALREADY_PLAYED, act2.check(*st));
 }
 
-TEST_F(ActionTest, ActionPlay_Ok)
-{
+TEST_F(ActionTest, ActionPlay_Ok) {
     st->set_player_can_play(PLAYER_1, true);
     st->set_player_can_play(PLAYER_2, true);
 

@@ -9,13 +9,12 @@
 
 namespace rules {
 
-class Messenger
-{
-public:
+class Messenger {
+   public:
     virtual ~Messenger() = default;
 
     virtual void send(const utils::Buffer&) = 0;
     virtual std::unique_ptr<utils::Buffer> recv() = 0;
 };
 
-} // namespace rules
+}  // namespace rules

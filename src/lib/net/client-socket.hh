@@ -3,9 +3,8 @@
 #pragma once
 
 #include <memory>
-#include <string>
-
 #include <net/socket.hh>
+#include <string>
 #include <utils/buffer.hh>
 
 namespace net {
@@ -13,9 +12,8 @@ namespace net {
 // Because it inherits Socket, ClientSocket's field names are pubsub* and
 // reqrep* to be consistent with ServerSocket
 
-class ClientSocket : public Socket
-{
-public:
+class ClientSocket : public Socket {
+   public:
     ClientSocket(const std::string& sub_addr, const std::string& req_addr);
 
     void init() override;
@@ -24,4 +22,4 @@ public:
     std::unique_ptr<utils::Buffer> pull(int flags = 0);
 };
 
-} // namespace net
+}  // namespace net

@@ -4,10 +4,8 @@
 
 #include <memory>
 #include <string>
-
-#include <zmq.hpp>
-
 #include <utils/buffer.hh>
+#include <zmq.hpp>
 
 namespace net {
 
@@ -17,9 +15,9 @@ struct Message;
 // needs to work. It is composed of the ZeroMQ context a PUB-SUB socket and
 // a REQ-REP socket
 
-class Socket // abstract
+class Socket  // abstract
 {
-public:
+   public:
     Socket(const std::string& pubsub_addr, const std::string& reqrep_addr,
            int io_thread);
 
@@ -31,11 +29,11 @@ public:
     virtual bool poll(long timeout);
     virtual void close() = 0;
 
-protected:
+   protected:
     bool send_sckt(const utils::Buffer& buf, zmq::socket_t* sckt, int flags);
     std::unique_ptr<utils::Buffer> recv_sckt(zmq::socket_t* sckt, int flags);
 
-protected:
+   protected:
     // Must be called by subclasses after custom initialization.
     void shared_init();
 
@@ -47,4 +45,4 @@ protected:
     std::unique_ptr<zmq::socket_t> reqrep_sckt_;
 };
 
-} // namespace net
+}  // namespace net

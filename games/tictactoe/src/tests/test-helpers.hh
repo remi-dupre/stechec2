@@ -2,16 +2,15 @@
 // Copyright (c) 2018 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <memory>
-
 #include <gtest/gtest.h>
+
+#include <memory>
 
 #include "../api.hh"
 #include "../game_state.hh"
 #include "../rules.hh"
 
-static rules::Players make_players(int id1, int id2)
-{
+static rules::Players make_players(int id1, int id2) {
     // Create two players (no spectator)
     rules::Players players;
     players.add(std::make_shared<rules::Player>(id1, rules::PLAYER));
@@ -19,11 +18,9 @@ static rules::Players make_players(int id1, int id2)
     return players;
 }
 
-class ActionTest : public ::testing::Test
-{
-protected:
-    virtual void SetUp()
-    {
+class ActionTest : public ::testing::Test {
+   protected:
+    virtual void SetUp() {
         utils::Logger::get().level() = utils::Logger::DEBUG_LEVEL;
         st.reset(new GameState(make_players(PLAYER_1, PLAYER_2)));
     }
@@ -34,11 +31,9 @@ protected:
     const int PLAYER_2 = 1;
 };
 
-class ApiTest : public ::testing::Test
-{
-protected:
-    virtual void SetUp()
-    {
+class ApiTest : public ::testing::Test {
+   protected:
+    virtual void SetUp() {
         utils::Logger::get().level() = utils::Logger::DEBUG_LEVEL;
         auto rules_players = make_players(PLAYER_1, PLAYER_2);
         players[0].id = PLAYER_1;
@@ -49,8 +44,7 @@ protected:
             std::make_unique<GameState>(rules_players), rules_players[1]);
     }
 
-    struct Player
-    {
+    struct Player {
         int id;
         std::unique_ptr<Api> api;
     };
@@ -60,11 +54,9 @@ protected:
     const int PLAYER_2 = 1;
 };
 
-class RulesTest : public ::testing::Test
-{
-protected:
-    virtual void SetUp()
-    {
+class RulesTest : public ::testing::Test {
+   protected:
+    virtual void SetUp() {
         utils::Logger::get().level() = utils::Logger::DEBUG_LEVEL;
         rules::Options opt;
         opt.map_file = "";

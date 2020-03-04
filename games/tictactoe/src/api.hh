@@ -2,10 +2,9 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <vector>
-
 #include <rules/api.hh>
 #include <rules/player.hh>
+#include <vector>
 
 #include "actions.hh"
 #include "constant.hh"
@@ -15,9 +14,8 @@
 ** The methods of this class are exported through 'interface.cc'
 ** to be called by the clients
 */
-class Api final : public rules::Api<GameState, error>
-{
-public:
+class Api final : public rules::Api<GameState, error> {
+   public:
     Api(std::unique_ptr<GameState> game_state,
         std::shared_ptr<rules::Player> player);
 

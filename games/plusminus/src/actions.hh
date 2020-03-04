@@ -1,11 +1,8 @@
 #ifndef ACTIONS_HH
 #define ACTIONS_HH
 
-enum action_id
-{
-    ID_ACTION_GUESS
-};
+enum action_id { ID_ACTION_GUESS };
 
 #include "action_guess.hh"
 
-#endif // !ACTIONS_HH
+#endif  // !ACTIONS_HH

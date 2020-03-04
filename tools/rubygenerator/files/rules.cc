@@ -8,10 +8,8 @@
 #include "actions.hh"
 
 Rules::Rules(const rules::Options opt)
-    :!!rules_cc_inheritance!! sandbox_(opt.time)
-{
-    if (!opt.champion_lib.empty())
-    {
+    :!!rules_cc_inheritance!! sandbox_(opt.time) {
+    if (!opt.champion_lib.empty()) {
         champion_dll_ = std::make_unique<utils::DLL>(opt.champion_lib);
 
         // FIXME: register user functions

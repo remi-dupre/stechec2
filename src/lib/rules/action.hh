@@ -4,18 +4,16 @@
 
 #include <functional>
 #include <memory>
-#include <vector>
-
 #include <utils/buffer.hh>
+#include <vector>
 
 namespace rules {
 
 class GameState;
 
 // Interface to be implemented by all action types.
-class IAction
-{
-public:
+class IAction {
+   public:
     virtual ~IAction() = default;
 
     // Check if the action can be applied to the state. Returns 0 if there is
@@ -42,24 +40,21 @@ public:
 // dynamic_casts everywhere.
 // It's kind of ugly, but it allows a lot more genericity in the codebase.
 template <typename TState>
-class Action : public IAction
-{
+class Action : public IAction {
     static_assert(std::is_base_of<rules::GameState, TState>::value,
                   "TState not derived from rules::GameState");
 
-public:
+   public:
     virtual int check(const TState& st) const = 0;
-    int check(const GameState& st) const override
-    {
+    int check(const GameState& st) const override {
         return check(static_cast<const TState&>(st));
     }
 
     virtual void apply_on(TState* st) const = 0;
-    void apply(GameState* st) const override
-    {
+    void apply(GameState* st) const override {
         apply_on(static_cast<TState*>(st));
     }
     void apply(std::unique_ptr<TState>& st) const { apply_on(st.get()); }
 };
 
-} // namespace rules
+}  // namespace rules

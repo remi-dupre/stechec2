@@ -4,15 +4,13 @@
 
 #include <rules/game-state.hh>
 #include <rules/player.hh>
-
 #include <unordered_map>
 #include <vector>
 
 #include "constant.hh"
 
-class GameState : public rules::GameState
-{
-public:
+class GameState : public rules::GameState {
+   public:
     const int NO_PLAYER = -1;
 
     GameState(const rules::Players& players);
@@ -34,7 +32,7 @@ public:
     void set_player_can_play(int player_id, bool can_play);
     bool player_can_play(int player_id) const;
 
-private:
+   private:
     static constexpr size_t PLAYER_COUNT = 2;
     static constexpr int LAST_PLAYER = PLAYER_COUNT - 1;
 

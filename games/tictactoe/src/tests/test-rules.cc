@@ -2,11 +2,9 @@
 // Copyright (c) 2018 Association Prologin <association@prologin.org>
 #include "test-helpers.hh"
 
-TEST_F(RulesTest, Rules_FinishWin)
-{
+TEST_F(RulesTest, Rules_FinishWin) {
     int cnt = 0;
-    while (!rules->is_finished())
-    {
+    while (!rules->is_finished()) {
         rules->start_of_player_turn(PLAYER_1);
         rules->end_of_player_turn(PLAYER_1);
 
@@ -24,14 +22,12 @@ TEST_F(RulesTest, Rules_FinishWin)
     }
 }
 
-TEST_F(RulesTest, Rules_FinishDraw)
-{
+TEST_F(RulesTest, Rules_FinishDraw) {
     std::vector<position> to_play1 = {{0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 2}};
     std::vector<position> to_play2 = {{0, 0}, {0, 2}, {1, 1}, {2, 1}};
     size_t idx1 = 0;
     size_t idx2 = 0;
-    while (!rules->is_finished())
-    {
+    while (!rules->is_finished()) {
         rules->start_of_player_turn(PLAYER_1);
         rules->game_state().set_cell(to_play1[idx1++], PLAYER_1);
         rules->end_of_player_turn(PLAYER_1);

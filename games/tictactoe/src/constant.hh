@@ -2,11 +2,10 @@
 // Copyright (c) 2012 Association Prologin <association@prologin.org>
 #pragma once
 
-#include <functional> // needed for std::hash
+#include <functional>  // needed for std::hash
 
 /// All possible error types that can be returned by action functions
-typedef enum error
-{
+typedef enum error {
     OK,               /* <- no error occurred */
     OUT_OF_BOUNDS,    /* <- provided position is out of bounds */
     ALREADY_OCCUPIED, /* <- someone already played at the provided position */
@@ -15,18 +14,15 @@ typedef enum error
 // This is needed for old compilers
 namespace std {
 template <>
-struct hash<error>
-{
-    size_t operator()(const error& v) const
-    {
+struct hash<error> {
+    size_t operator()(const error& v) const {
         return hash<int>()(static_cast<int>(v));
     }
 };
-} // namespace std
+}  // namespace std
 
 /// Position on the TicTacToe board
-typedef struct position
-{
+typedef struct position {
     int x; /* <- X coordinate */
     int y; /* <- Y coordinate */
 } position;

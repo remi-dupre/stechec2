@@ -3,7 +3,6 @@
 #pragma once
 
 #include <memory>
-
 #include <rules/actions.hh>
 #include <rules/client-messenger.hh>
 #include <rules/options.hh>
@@ -15,15 +14,14 @@
 
 #include "api.hh"
 
-class Rules !!rules_hh_inheritance !!
-{
-public:
+class Rules !!rules_hh_inheritance !! {
+   public:
     explicit Rules(const rules::Options opt);
     virtual ~Rules() {}
 
     // @@GEN_HERE@@
 
-private:
+   private:
     void register_actions();
 
     std::unique_ptr<utils::DLL> champion_dll_;
