@@ -28,11 +28,11 @@ def caml_cxx_args(arg_list):
 
 @register_filter
 def caml_prototype(func) -> str:
-    arg_list = ' '.join(arg_name for arg_name, _, _ in func['fct_arg'])
+    arg_list = ' '.join("({}:{})".format(arg_name, caml_type(arg_type)) for arg_name, arg_type, _ in func['fct_arg'])
     if arg_list == '':  # make unit the only parameter
         arg_list = '()'
 
-    return 'let {} {} ='.format(func['fct_name'], arg_list)
+    return 'let {} {} : {} ='.format(func['fct_name'], arg_list, caml_type(func['fct_ret_type']))
 
 
 @register_filter
@@ -47,6 +47,19 @@ def caml_signature(func, external: bool = False) -> str:
                                      func['fct_name'],
                                      arg_list,
                                      caml_type(func['fct_ret_type']))
+
+
+@register_filter
+def caml_default_value(ret_type) -> str:
+    if ret_type == 'int':
+        return ';\n42'
+    if ret_type == 'double':
+        return ';\n42.'
+    if is_array(ret_type):
+        return ';\n[||]'
+    if ret_type == 'bool':
+        return ';\ntrue'
+    return ''
 
 
 @register_filter
