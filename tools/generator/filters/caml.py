@@ -113,3 +113,12 @@ def caml_param_macro(value) -> str:
             ', '.join(chunk)
         ))
     return '\n'.join(lines)
+
+
+@register_filter
+def caml_test_float_struct(struct_field) -> bool:
+    """
+    Test if the struct contain only float fields.
+    """
+    return all(type_value == "double"
+               for _, type_value, _ in struct_field)
